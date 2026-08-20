@@ -1,5 +1,6 @@
 ﻿using MySqlConnector;
 using StudentRecordApp.Data;
+using StudentRecordApp.Models;
 
 namespace StudentRecordApp
 {
@@ -46,6 +47,7 @@ namespace StudentRecordApp
 
                     case "5":
                         Console.WriteLine("Goodbye!");
+                        Pause();
                         return;
 
                     default:
@@ -62,20 +64,22 @@ namespace StudentRecordApp
 
             Console.WriteLine("Add Student");
 
+            Student student = new Student();
+
             Console.Write("Enter Name: ");
-            string name = Console.ReadLine();
+            student.Name = Console.ReadLine();
 
             Console.Write("Enter Age: ");
-            int age = Convert.ToInt32(Console.ReadLine());
+            student.Age = Convert.ToInt32(Console.ReadLine());
 
             Console.Write("Enter Email: ");
-            string email = Console.ReadLine();
+            student.Email = Console.ReadLine();
 
             Console.Write("Enter Department: ");
-            string department = Console.ReadLine();
+            student.Department = Console.ReadLine();
 
             Console.Write("Enter Semester: ");
-            string semester = Console.ReadLine();
+            student.Semester = Convert.ToInt32(Console.ReadLine());
 
             using (MySqlConnection connection = database.GetConnection())
             {
@@ -88,11 +92,11 @@ namespace StudentRecordApp
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
-                    command.Parameters.AddWithValue("@Name", name);
-                    command.Parameters.AddWithValue("@Age", age);
-                    command.Parameters.AddWithValue("@Email", email);
-                    command.Parameters.AddWithValue("@Department", department);
-                    command.Parameters.AddWithValue("@Semester", semester);
+                    command.Parameters.AddWithValue("@Name", student.Name);
+                    command.Parameters.AddWithValue("@Age", student.Age);
+                    command.Parameters.AddWithValue("@Email", student.Email);
+                    command.Parameters.AddWithValue("@Department", student.Department);
+                    command.Parameters.AddWithValue("@Semester", student.Semester);
 
                     command.ExecuteNonQuery();
                 }
@@ -108,6 +112,8 @@ namespace StudentRecordApp
 
             Console.WriteLine("Student Records");
 
+            List<Student> students = new List<Student>();
+
             using (MySqlConnection connection = database.GetConnection())
             {
                 connection.Open();
@@ -120,16 +126,31 @@ namespace StudentRecordApp
                     {
                         while (reader.Read())
                         {
-                            Console.WriteLine("--------------------------------");
-                            Console.WriteLine($"ID: {reader["StudentId"]}");
-                            Console.WriteLine($"Name: {reader["Name"]}");
-                            Console.WriteLine($"Age: {reader["Age"]}");
-                            Console.WriteLine($"Email: {reader["Email"]}");
-                            Console.WriteLine($"Department: {reader["Department"]}");
-                            Console.WriteLine($"Semester: {reader["Semester"]}");
+                            Student student = new Student
+                            {
+                                StudentId = Convert.ToInt32(reader["StudentId"]),
+                                Name = reader["Name"].ToString(),
+                                Age = Convert.ToInt32(reader["Age"]),
+                                Email = reader["Email"].ToString(),
+                                Department = reader["Department"].ToString(),
+                                Semester = Convert.ToInt32(reader["Semester"])
+                            };
+
+                            students.Add(student);
                         }
                     }
                 }
+            }
+
+            foreach (Student student in students)
+            {
+                Console.WriteLine("--------------------------------");
+                Console.WriteLine($"ID: {student.StudentId}");
+                Console.WriteLine($"Name: {student.Name}");
+                Console.WriteLine($"Age: {student.Age}");
+                Console.WriteLine($"Email: {student.Email}");
+                Console.WriteLine($"Department: {student.Department}");
+                Console.WriteLine($"Semester: {student.Semester}");
             }
 
             Pause();
@@ -141,23 +162,25 @@ namespace StudentRecordApp
 
             Console.WriteLine("Update Student");
 
+            Student student = new Student();
+
             Console.Write("Enter Student ID: ");
-            int id = Convert.ToInt32(Console.ReadLine());
+            student.StudentId = Convert.ToInt32(Console.ReadLine());
 
             Console.Write("Enter New Name: ");
-            string name = Console.ReadLine();
+            student.Name = Console.ReadLine();
 
             Console.Write("Enter New Age: ");
-            int age = Convert.ToInt32(Console.ReadLine());
+            student.Age = Convert.ToInt32(Console.ReadLine());
 
             Console.Write("Enter New Email: ");
-            string email = Console.ReadLine();
+            student.Email = Console.ReadLine();
 
             Console.Write("Enter New Department: ");
-            string department = Console.ReadLine();
+            student.Department = Console.ReadLine();
 
             Console.Write("Enter New Semester: ");
-            string semester = Console.ReadLine();
+            student.Semester = Convert.ToInt32(Console.ReadLine());
 
             using (MySqlConnection connection = database.GetConnection())
             {
@@ -173,12 +196,12 @@ namespace StudentRecordApp
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
-                    command.Parameters.AddWithValue("@StudentId", id);
-                    command.Parameters.AddWithValue("@Name", name);
-                    command.Parameters.AddWithValue("@Age", age);
-                    command.Parameters.AddWithValue("@Email", email);
-                    command.Parameters.AddWithValue("@Department", department);
-                    command.Parameters.AddWithValue("@Semester", semester);
+                    command.Parameters.AddWithValue("@StudentId", student.StudentId);
+                    command.Parameters.AddWithValue("@Name", student.Name);
+                    command.Parameters.AddWithValue("@Age", student.Age);
+                    command.Parameters.AddWithValue("@Email", student.Email);
+                    command.Parameters.AddWithValue("@Department", student.Department);
+                    command.Parameters.AddWithValue("@Semester", student.Semester);
 
                     int rows = command.ExecuteNonQuery();
 
