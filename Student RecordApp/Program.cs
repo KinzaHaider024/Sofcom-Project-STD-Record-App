@@ -60,7 +60,7 @@ namespace StudentRecordApp
         {
             Console.Clear();
 
-            Console.WriteLine("----- Add Student -----");
+            Console.WriteLine("Add Student");
 
             Console.Write("Enter Name: ");
             string name = Console.ReadLine();
@@ -106,7 +106,7 @@ namespace StudentRecordApp
         {
             Console.Clear();
 
-            Console.WriteLine("----- Student Records -----");
+            Console.WriteLine("Student Records");
 
             using (MySqlConnection connection = database.GetConnection())
             {
@@ -139,7 +139,7 @@ namespace StudentRecordApp
         {
             Console.Clear();
 
-            Console.WriteLine("----- Update Student -----");
+            Console.WriteLine("Update Student");
 
             Console.Write("Enter Student ID: ");
             int id = Convert.ToInt32(Console.ReadLine());
@@ -196,7 +196,7 @@ namespace StudentRecordApp
         {
             Console.Clear();
 
-            Console.WriteLine("----- Delete Student -----");
+            Console.WriteLine("Delete Student");
 
             Console.Write("Enter Student ID: ");
             int id = Convert.ToInt32(Console.ReadLine());
