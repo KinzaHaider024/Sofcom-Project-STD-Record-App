@@ -162,48 +162,99 @@ namespace StudentRecordApp
 
             Console.WriteLine("Update Student");
 
-            Student student = new Student();
-
             Console.Write("Enter Student ID: ");
-            student.StudentId = Convert.ToInt32(Console.ReadLine());
+            int id = Convert.ToInt32(Console.ReadLine());
 
-            Console.Write("Enter New Name: ");
-            student.Name = Console.ReadLine();
+            Student student = null;
 
-            Console.Write("Enter New Age: ");
-            student.Age = Convert.ToInt32(Console.ReadLine());
-
-            Console.Write("Enter New Email: ");
-            student.Email = Console.ReadLine();
-
-            Console.Write("Enter New Department: ");
-            student.Department = Console.ReadLine();
-
-            Console.Write("Enter New Semester: ");
-            student.Semester = Convert.ToInt32(Console.ReadLine());
-
+            // Step 1: Pehle current data fetch karo
             using (MySqlConnection connection = database.GetConnection())
             {
                 connection.Open();
 
-                string query = @"UPDATE Students
-                                 SET Name = @Name,
-                                     Age = @Age,
-                                     Email = @Email,
-                                     Department = @Department,
-                                     Semester = @Semester
-                                 WHERE StudentId = @StudentId";
+                string selectQuery = "SELECT * FROM Students WHERE StudentId = @StudentId";
 
-                using (MySqlCommand command = new MySqlCommand(query, connection))
+                using (MySqlCommand selectCommand = new MySqlCommand(selectQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@StudentId", student.StudentId);
-                    command.Parameters.AddWithValue("@Name", student.Name);
-                    command.Parameters.AddWithValue("@Age", student.Age);
-                    command.Parameters.AddWithValue("@Email", student.Email);
-                    command.Parameters.AddWithValue("@Department", student.Department);
-                    command.Parameters.AddWithValue("@Semester", student.Semester);
+                    selectCommand.Parameters.AddWithValue("@StudentId", id);
 
-                    int rows = command.ExecuteNonQuery();
+                    using (MySqlDataReader reader = selectCommand.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            student = new Student
+                            {
+                                StudentId = Convert.ToInt32(reader["StudentId"]),
+                                Name = reader["Name"].ToString(),
+                                Age = Convert.ToInt32(reader["Age"]),
+                                Email = reader["Email"].ToString(),
+                                Department = reader["Department"].ToString(),
+                                Semester = Convert.ToInt32(reader["Semester"])
+                            };
+                        }
+                    }
+                }
+            }
+
+            // Step 2: Agar student nahi mila
+            if (student == null)
+            {
+                Console.WriteLine("\nStudent not found.");
+                Pause();
+                return;
+            }
+
+            // Step 3: User se naya data poochein, khali chhodne pe purani value rahegi
+            Console.WriteLine("\nLeave blank and press Enter to keep the current value.\n");
+
+            Console.Write($"Enter New Name [{student.Name}]: ");
+            string nameInput = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(nameInput))
+                student.Name = nameInput;
+
+            Console.Write($"Enter New Age [{student.Age}]: ");
+            string ageInput = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(ageInput))
+                student.Age = Convert.ToInt32(ageInput);
+
+            Console.Write($"Enter New Email [{student.Email}]: ");
+            string emailInput = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(emailInput))
+                student.Email = emailInput;
+
+            Console.Write($"Enter New Department [{student.Department}]: ");
+            string departmentInput = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(departmentInput))
+                student.Department = departmentInput;
+
+            Console.Write($"Enter New Semester [{student.Semester}]: ");
+            string semesterInput = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(semesterInput))
+                student.Semester = Convert.ToInt32(semesterInput);
+
+            // Step 4: Ab update query chalayein
+            using (MySqlConnection connection = database.GetConnection())
+            {
+                connection.Open();
+
+                string updateQuery = @"UPDATE Students
+                                       SET Name = @Name,
+                                           Age = @Age,
+                                           Email = @Email,
+                                           Department = @Department,
+                                           Semester = @Semester
+                                       WHERE StudentId = @StudentId";
+
+                using (MySqlCommand updateCommand = new MySqlCommand(updateQuery, connection))
+                {
+                    updateCommand.Parameters.AddWithValue("@StudentId", student.StudentId);
+                    updateCommand.Parameters.AddWithValue("@Name", student.Name);
+                    updateCommand.Parameters.AddWithValue("@Age", student.Age);
+                    updateCommand.Parameters.AddWithValue("@Email", student.Email);
+                    updateCommand.Parameters.AddWithValue("@Department", student.Department);
+                    updateCommand.Parameters.AddWithValue("@Semester", student.Semester);
+
+                    int rows = updateCommand.ExecuteNonQuery();
 
                     if (rows > 0)
                         Console.WriteLine("\nStudent updated successfully!");
