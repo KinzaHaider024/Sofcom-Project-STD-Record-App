@@ -47,7 +47,6 @@ namespace StudentRecordApp
 
                     case "5":
                         Console.WriteLine("Goodbye!");
-                        Pause();
                         return;
 
                     default:
