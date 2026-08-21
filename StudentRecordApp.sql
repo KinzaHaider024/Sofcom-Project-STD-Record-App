@@ -9,4 +9,6 @@ Create table Students(
     Semester int not null
     );
 select*from Students;
+ALTER TABLE Students
+ADD CONSTRAINT UQ_Email UNIQUE (Email);
 

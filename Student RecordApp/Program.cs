@@ -1,4 +1,5 @@
-﻿using MySqlConnector;
+﻿using System.Threading;
+using MySqlConnector;
 using StudentRecordApp.Data;
 using StudentRecordApp.Models;
 
@@ -47,6 +48,7 @@ namespace StudentRecordApp
 
                     case "5":
                         Console.WriteLine("Goodbye!");
+                        Thread.Sleep(2000);
                         return;
 
                     default:
@@ -80,28 +82,36 @@ namespace StudentRecordApp
             Console.Write("Enter Semester: ");
             student.Semester = Convert.ToInt32(Console.ReadLine());
 
-            using (MySqlConnection connection = database.GetConnection())
+            try
             {
-                connection.Open();
-
-                string query = @"INSERT INTO Students
-                                 (Name, Age, Email, Department, Semester)
-                                 VALUES
-                                 (@Name, @Age, @Email, @Department, @Semester)";
-
-                using (MySqlCommand command = new MySqlCommand(query, connection))
+                using (MySqlConnection connection = database.GetConnection())
                 {
-                    command.Parameters.AddWithValue("@Name", student.Name);
-                    command.Parameters.AddWithValue("@Age", student.Age);
-                    command.Parameters.AddWithValue("@Email", student.Email);
-                    command.Parameters.AddWithValue("@Department", student.Department);
-                    command.Parameters.AddWithValue("@Semester", student.Semester);
+                    connection.Open();
 
-                    command.ExecuteNonQuery();
+                    string query = @"INSERT INTO Students
+                                     (Name, Age, Email, Department, Semester)
+                                     VALUES
+                                     (@Name, @Age, @Email, @Department, @Semester)";
+
+                    using (MySqlCommand command = new MySqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Name", student.Name);
+                        command.Parameters.AddWithValue("@Age", student.Age);
+                        command.Parameters.AddWithValue("@Email", student.Email);
+                        command.Parameters.AddWithValue("@Department", student.Department);
+                        command.Parameters.AddWithValue("@Semester", student.Semester);
+
+                        command.ExecuteNonQuery();
+                    }
                 }
+
+                Console.WriteLine("\nStudent added successfully!");
+            }
+            catch (MySqlException ex) when (ex.Number == 1062)
+            {
+                Console.WriteLine("\nThis email is already registered. Please use a different email.");
             }
 
-            Console.WriteLine("\nStudent added successfully!");
             Pause();
         }
 
@@ -166,7 +176,6 @@ namespace StudentRecordApp
 
             Student student = null;
 
-            // Step 1: Pehle current data fetch karo
             using (MySqlConnection connection = database.GetConnection())
             {
                 connection.Open();
@@ -195,7 +204,6 @@ namespace StudentRecordApp
                 }
             }
 
-            // Step 2: Agar student nahi mila
             if (student == null)
             {
                 Console.WriteLine("\nStudent not found.");
@@ -203,7 +211,6 @@ namespace StudentRecordApp
                 return;
             }
 
-            // Step 3: User se naya data poochein, khali chhodne pe purani value rahegi
             Console.WriteLine("\nLeave blank and press Enter to keep the current value.\n");
 
             Console.Write($"Enter New Name [{student.Name}]: ");
@@ -231,35 +238,41 @@ namespace StudentRecordApp
             if (!string.IsNullOrWhiteSpace(semesterInput))
                 student.Semester = Convert.ToInt32(semesterInput);
 
-            // Step 4: Ab update query chalayein
-            using (MySqlConnection connection = database.GetConnection())
+            try
             {
-                connection.Open();
-
-                string updateQuery = @"UPDATE Students
-                                       SET Name = @Name,
-                                           Age = @Age,
-                                           Email = @Email,
-                                           Department = @Department,
-                                           Semester = @Semester
-                                       WHERE StudentId = @StudentId";
-
-                using (MySqlCommand updateCommand = new MySqlCommand(updateQuery, connection))
+                using (MySqlConnection connection = database.GetConnection())
                 {
-                    updateCommand.Parameters.AddWithValue("@StudentId", student.StudentId);
-                    updateCommand.Parameters.AddWithValue("@Name", student.Name);
-                    updateCommand.Parameters.AddWithValue("@Age", student.Age);
-                    updateCommand.Parameters.AddWithValue("@Email", student.Email);
-                    updateCommand.Parameters.AddWithValue("@Department", student.Department);
-                    updateCommand.Parameters.AddWithValue("@Semester", student.Semester);
+                    connection.Open();
 
-                    int rows = updateCommand.ExecuteNonQuery();
+                    string updateQuery = @"UPDATE Students
+                                           SET Name = @Name,
+                                               Age = @Age,
+                                               Email = @Email,
+                                               Department = @Department,
+                                               Semester = @Semester
+                                           WHERE StudentId = @StudentId";
 
-                    if (rows > 0)
-                        Console.WriteLine("\nStudent updated successfully!");
-                    else
-                        Console.WriteLine("\nStudent not found.");
+                    using (MySqlCommand updateCommand = new MySqlCommand(updateQuery, connection))
+                    {
+                        updateCommand.Parameters.AddWithValue("@StudentId", student.StudentId);
+                        updateCommand.Parameters.AddWithValue("@Name", student.Name);
+                        updateCommand.Parameters.AddWithValue("@Age", student.Age);
+                        updateCommand.Parameters.AddWithValue("@Email", student.Email);
+                        updateCommand.Parameters.AddWithValue("@Department", student.Department);
+                        updateCommand.Parameters.AddWithValue("@Semester", student.Semester);
+
+                        int rows = updateCommand.ExecuteNonQuery();
+
+                        if (rows > 0)
+                            Console.WriteLine("\nStudent updated successfully!");
+                        else
+                            Console.WriteLine("\nStudent not found.");
+                    }
                 }
+            }
+            catch (MySqlException ex) when (ex.Number == 1062)
+            {
+                Console.WriteLine("\nThis email is already used by another student.");
             }
 
             Pause();
